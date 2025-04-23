@@ -317,5 +317,67 @@
   setInterval(drawMatrix, 33);
 </script>
 
+<script>
+  const specialUser = "yourondoxbinurfucked";
+  let currentUser = null;
+
+  function escapeHTML(str) {
+    return str.replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+  }
+
+  function sendMessage() {
+    const usernameInput = document.getElementById("username");
+    const messageInput = document.getElementById("message");
+    const messagesDiv = document.getElementById("messages");
+
+    let username = usernameInput.value.trim();
+    let message = messageInput.value.trim();
+
+    if (!username || !message) {
+      alert("Username and message are required!");
+      return;
+    }
+
+    if (!currentUser) currentUser = username;
+
+    // Sanitize input
+    username = escapeHTML(username);
+    message = escapeHTML(message);
+
+    const isOwner = username === specialUser;
+    const roleClass = isOwner ? "owner" : "user";
+    const roleTag = isOwner ? `<span style="color: red; font-weight: bold;"> [OWNER]</span>` : "";
+
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("message");
+
+    msgDiv.innerHTML = `
+      <span class="${roleClass}">${username}${roleTag}:</span> ${message}
+    `;
+
+    // Add owner powers
+    if (isOwner) {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Delete";
+      deleteBtn.style.marginLeft = "10px";
+      deleteBtn.onclick = () => msgDiv.remove();
+      msgDiv.appendChild(deleteBtn);
+    }
+
+    messagesDiv.appendChild(msgDiv);
+    messageInput.value = "";
+  }
+
+  // Enable "Enter" to send
+  document.getElementById("message").addEventListener("keypress", function (e) {
+    if (e.key === "Enter") sendMessage();
+  });
+</script>
+
+  
 </body>
 </html>
