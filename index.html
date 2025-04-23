@@ -123,6 +123,41 @@
       }
     }
 
+    /* Login Form */
+    #loginForm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      background-color: rgba(0, 0, 0, 0.8);
+      border: 2px solid #00ff00;
+      border-radius: 10px;
+      padding: 20px;
+      color: #00ff00;
+    }
+
+    #loginForm input {
+      margin: 10px 0;
+      padding: 10px;
+      background: black;
+      color: #00ff00;
+      border: 1px solid #00ff00;
+      border-radius: 5px;
+    }
+
+    #loginForm button {
+      padding: 10px 20px;
+      background: #003300;
+      color: #00ff00;
+      border: 1px solid #00ff00;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
   </style>
 </head>
 <body>
@@ -135,7 +170,17 @@
   <img src="https://example.com/doxbin-logo.png" id="doxbinLogo" alt="Doxbin Logo">
 </div>
 
-<div class="chatbox">
+<!-- Login Form -->
+<div id="loginForm">
+  <h2>Login</h2>
+  <input type="text" id="username" placeholder="Enter your username" />
+  <input type="email" id="email" placeholder="Enter your email" />
+  <input type="password" id="password" placeholder="Enter your password" />
+  <button onclick="login()">Login</button>
+  <button onclick="signup()">Sign Up</button>
+</div>
+
+<div class="chatbox" style="display: none;">
   <div class="chat-header">Matrix Chat</div>
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-input">
@@ -146,6 +191,7 @@
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
 <script>
@@ -163,9 +209,48 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+  const auth = firebase.auth();
 
   const chatBox = document.getElementById("chatMessages");
   const input = document.getElementById("chatInput");
+  const loginForm = document.getElementById("loginForm");
+  const chatboxDiv = document.querySelector(".chatbox");
+  let currentUser = null;
+
+  // Login function
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        currentUser = userCredential.user;
+        document.getElementById("username").value = currentUser.displayName || "Guest";
+        loginForm.style.display = "none";
+        chatboxDiv.style.display = "block";
+      })
+      .catch(error => alert(error.message));
+  }
+
+  // Sign Up function
+  function signup() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const username = document.getElementById("username").value;
+
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        currentUser = userCredential.user;
+        currentUser.updateProfile({
+          displayName: username
+        }).then(() => {
+          document.getElementById("username").value = username;
+          loginForm.style.display = "none";
+          chatboxDiv.style.display = "block";
+        });
+      })
+      .catch(error => alert(error.message));
+  }
 
   function sendMessage() {
     const msg = input.value.trim();
@@ -173,6 +258,7 @@
 
     const chatRef = db.ref("messages");
     chatRef.push({
+      user: currentUser ? currentUser.displayName : "Guest",
       text: msg,
       timestamp: Date.now()
     });
@@ -186,7 +272,7 @@
       const data = snapshot.val();
       const msg = document.createElement("div");
       msg.className = "message user";
-      msg.textContent = data.text;
+      msg.innerHTML = `<strong>${data.user}:</strong> ${data.text}`;
       chatBox.appendChild(msg);
       chatBox.scrollTop = chatBox.scrollHeight;
     });
