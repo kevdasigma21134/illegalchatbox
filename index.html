@@ -83,11 +83,57 @@
     .user {
       text-align: right;
     }
+
+    /* Title and Logo */
+    #titleOverlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #00ff00;
+      font-size: 36px;
+      text-align: center;
+      z-index: 999;
+      opacity: 0;
+      animation: fadeIn 3s forwards;
+    }
+
+    #doxbinLogo {
+      width: 100px;
+      margin-top: 20px;
+      opacity: 0;
+      animation: fadeInLogo 3s forwards;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInLogo {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
   </style>
 </head>
 <body>
 
 <canvas id="matrix"></canvas>
+
+<!-- Title and Logo Pop-Up -->
+<div id="titleOverlay">
+  Illegal Chatbox
+  <img src="https://example.com/doxbin-logo.png" id="doxbinLogo" alt="Doxbin Logo">
+</div>
 
 <div class="chatbox">
   <div class="chat-header">Matrix Chat</div>
@@ -147,6 +193,13 @@
   }
 
   listenForMessages();
+
+  // Add event listener for the "Enter" key to send the message
+  input.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      sendMessage();
+    }
+  });
 
   // Matrix effect
   const canvas = document.getElementById('matrix');
